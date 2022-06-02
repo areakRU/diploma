@@ -34,7 +34,7 @@ class GetDataFromFiles:
         files = os.listdir(self.DATA_PATH)
         for file_name in files:
             signal = np.loadtxt(self.DATA_PATH + '\\' + file_name)
-            filter = Filter(signal, 20)
+            filter = Filter(signal, 8)
             filt_signal = filter.filtfilt()
             cutter = Cutter(filt_signal, 2000, 8000, 500000)
             cut_filt_signals = cutter.cut_signal()

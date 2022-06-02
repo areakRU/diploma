@@ -16,32 +16,55 @@ import numpy as np
 
 class Network:
     def __init__(self, PATH = r'NeuralNetwork\saved_model.hdf5'):
-        classes = 5
+        # classes = 6
+
+        # self.model = Sequential()
+        # self.model.add(InputLayer(input_shape=(2000,)))
+        # self.model.add(Reshape((2000,1), input_shape=(2000,)))
+        # self.model.add(BatchNormalization())
+        # self.model.add(Conv1D(100,50,activation='relu', strides=2))
+        # self.model.add(Conv1D(75,50,activation='relu'))
+        # self.model.add(Dropout(0.1))
+        # self.model.add(Conv1D(75,50,activation='relu', strides=2))
+        # self.model.add(Conv1D(75,40,activation='relu'))
+        # self.model.add(BatchNormalization())
+        # self.model.add(MaxPooling1D(2))
+        # self.model.add(Conv1D(75,40,activation='relu'))
+        # self.model.add(Conv1D(100,30,activation='relu'))
+        # self.model.add(Conv1D(150,30,activation='relu'))
+        # self.model.add(BatchNormalization())
+        # self.model.add(MaxPooling1D())
+        # self.model.add(Dropout(0.3))
+        # self.model.add(Flatten())
+        # self.model.add(Dense(classes, activation='softmax'))
+
+        # opt = adam_v2.Adam()
+        # self.model.compile(optimizer = opt, loss='categorical_crossentropy', metrics=['accuracy'])
+
+        N_classes = 6
 
         self.model = Sequential()
-        self.model.add(InputLayer(input_shape=(2000,)))
-        self.model.add(Reshape((2000,1), input_shape=(2000,)))
+        self.model.add(InputLayer(input_shape=(2000, )))
+        self.model.add(Reshape((2000,1),input_shape=(2000,)))
         self.model.add(BatchNormalization())
-        self.model.add(Conv1D(100,50,activation='relu', strides=2))
-        self.model.add(Conv1D(75,50,activation='relu'))
-        self.model.add(Dropout(0.1))
-        self.model.add(Conv1D(75,50,activation='relu', strides=2))
-        self.model.add(Conv1D(75,40,activation='relu'))
+        self.model.add(Conv1D(25,40, activation='elu',padding='same', strides=2)) # количество фильтров, длинна фильтра 'relu' #25
+        self.model.add(Conv1D(25,20, activation='elu',padding='same',name = 'style'))#25
+        self.model.add(Conv1D(20,20, activation='elu',padding='same', strides=2))#25
+        self.model.add(Conv1D(25,20, activation='elu',padding='same'))#25
         self.model.add(BatchNormalization())
         self.model.add(MaxPooling1D(2))
-        self.model.add(Conv1D(75,40,activation='relu'))
-        self.model.add(Conv1D(100,30,activation='relu'))
-        self.model.add(Conv1D(150,30,activation='relu'))
+        self.model.add(Conv1D(20,20, activation='elu',padding='same'))#25
+        self.model.add(Conv1D(40,20, activation='elu',padding='same'))#40
+        self.model.add(Conv1D(100,20, activation='elu',padding='same'))#100
+        self.model.add(Dropout(0.5))
         self.model.add(BatchNormalization())
-        self.model.add(MaxPooling1D())
-        self.model.add(Dropout(0.3))
-        self.model.add(Flatten())
-        self.model.add(Dense(classes, activation='softmax'))
+        self.model.add(MaxPooling1D(2))
+        self.model.add(GlobalMaxPooling1D(name = 'flatt'))
+        self.model.add(Dense(N_classes, activation='softmax'))
 
-        opt = adam_v2.Adam()
+        opt = keras.optimizers.Adam(learning_rate=0.0009,amsgrad = 'false') # Defaults to 0.001.
         self.model.compile(optimizer = opt, loss='categorical_crossentropy', metrics=['accuracy'])
         self.model.load_weights(PATH)
-        self.model.summary()
 
 
     def predict(self, signal : ndarray) -> ndarray:
@@ -50,5 +73,5 @@ class Network:
 
     def predict_classes(self, signal : ndarray) -> ndarray:
         y_predicted = self.model.predict(signal.reshape((1,2000)))
-        y_predicted = np.round(y_predicted).argmax(axis=1)
+        y_predicted = y_predicted.argmax(axis=1)
         return y_predicted

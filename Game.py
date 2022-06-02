@@ -27,7 +27,8 @@ class Game:
         pg.init()
         self.is_game_started = False
         self.colors = Colors().get_colors()
-        self.network = Network()
+        self.networks = list()
+        self.init_networks()
         self.keyboard_driver = KeyboardDriver()
         self.sing_in_data = SingInData()
         self.db = Db(os.environ['DB_DIPLOMA_NAME'], os.environ['DB_DIPLOMA_LOGIN'], os.environ['DB_DIPLOMA_PASSWORD'], 'localhost')
@@ -36,6 +37,17 @@ class Game:
         self.draw_ui()
         self.draw_level((5,5))
         self.run()
+
+
+    def init_networks(self):
+        self.networks.append(Network('NeuralNetwork\model_1.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_2.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_3.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_4.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_5.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_6.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_7.hdf5'))
+        self.networks.append(Network('NeuralNetwork\model_8.hdf5'))
 
 
     def draw_ui(self, game_screen_indent = (0, 200)):
@@ -174,20 +186,22 @@ class Game:
         elif movement_type == 5:
             self.is_game_started = False
             login = self.text_edit.get_textstring()
-            graphic_password = str.encode(self.sing_in_data.get())
+            graphic_password = str.encode(self.sing_in_data.get_graphic_password())
             self.db.cursor.execute('SELECT graphic_password, salt_graphic_password FROM public."user" WHERE login = %s', (login, ))
             user_data = self.db.cursor.fetchall()
             if len(user_data) > 0:
                 db_graphic_password, db_salt = user_data[0]
                 graphic_password_hashed = bcrypt.hashpw(graphic_password, str.encode(db_salt))
-                if graphic_password_hashed.decode('utf8') == db_graphic_password:
+                if db_graphic_password == graphic_password_hashed.decode('utf8'):
                     self.auth_text_result.redraw_text('Authentication completed.', '0x9bcf53')
                 else:
                     self.auth_text_result.redraw_text('Authentication error. Enter correct login or password.', '0xe25050')
             else:
                 self.auth_text_result.redraw_text('Authentication error. Enter correct login or password.', '0xe25050')
             print('Схатить')
-        print(self.sing_in_data.get_graphic_password())
+            self.sing_in_data = SingInData()
+            self.circles.clear()
+            self.draw_level((5,5))
 
 
     def get_new_prepared_signal(self):
@@ -195,9 +209,9 @@ class Game:
             self.auth_text_result.redraw_text('', '0xe25050')
             driver = EmgDriver()
             data = driver.get_data(self.indicator)
-            filter = Filter(data, 20)
+            filter = Filter(data, 8)
             filtered_data = filter.filtfilt()
-            cutter = Cutter(filtered_data, 2000, 8000, 350000)
+            cutter = Cutter(filtered_data, 2000, 15000, 350000)
             cut_filtered_data = cutter.cut_signal()
         except TimeoutError:
             self.is_game_started = False
@@ -207,8 +221,11 @@ class Game:
 
 
     def get_predicted_movement(self, signal):
-        y_predicted = self.network.predict_classes(signal)
-        return y_predicted
+        y_predicted = np.zeros(len(self.networks), dtype=int)
+        for idx_prediction in range(len(self.networks)):
+            y_predicted[idx_prediction] = self.networks[idx_prediction].predict_classes(signal)
+        count_of_occurences = np.array([len(y_predicted[y_predicted==i]) for i in range(6)])
+        return count_of_occurences.argmax()
 
 
     def handle_mouse_button_down(self):
@@ -254,7 +271,7 @@ class Game:
                 emg_signal = self.get_new_prepared_signal()
                 if emg_signal.size != 0:
                     predicted_movement = self.get_predicted_movement(emg_signal[0])
-                    self.redraw_level(predicted_movement[0])
+                    self.redraw_level(predicted_movement)
                 elif emg_signal.size == 0 and self.is_game_started:
                     self.auth_text_result.redraw_text('Please, repeat movement. The movement wasn\'t clear.', '0xe25050')
 
