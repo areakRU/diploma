@@ -225,6 +225,9 @@ class Game:
         for idx_prediction in range(len(self.networks)):
             y_predicted[idx_prediction] = self.networks[idx_prediction].predict_classes(signal)
         count_of_occurences = np.array([len(y_predicted[y_predicted==i]) for i in range(6)])
+        print(y_predicted)
+        print(count_of_occurences)
+        print(count_of_occurences.argmax())
         return count_of_occurences.argmax()
 
 
