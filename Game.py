@@ -144,33 +144,33 @@ class Game:
                 break
 
         if movement_type == 0:
-            print('Влево')
             if id_x - 1 >= 0:
                 if self.circles[id_x][id_y].color != (130,130,130):
                     self.circles[id_x][id_y].redraw_circle(self.circles[id_x][id_y].color)
                 self.cursor_position[0] = self.x_array[id_x - 1]
-                pg.draw.circle(self.screen, (130,130,130), (self.cursor_position[0], self.cursor_position[1]), 5)            
+                pg.draw.circle(self.screen, (130,130,130), (self.cursor_position[0], self.cursor_position[1]), 5) 
+                self.auth_text_result.redraw_text('Влево', '0xBEBEBE')           
         elif movement_type == 1:
             if id_x + 1 < len(self.x_array):
                 if self.circles[id_x][id_y].color != (130,130,130):
                     self.circles[id_x][id_y].redraw_circle(self.circles[id_x][id_y].color)
                 self.cursor_position[0] = self.x_array[id_x + 1]
                 pg.draw.circle(self.screen, (130,130,130), (self.cursor_position[0], self.cursor_position[1]), 5)  
-            print('Вправо')
+            self.auth_text_result.redraw_text('Вправо', '0xBEBEBE')
         elif movement_type == 2:
             if id_y - 1 >= 0:
                 if self.circles[id_x][id_y].color != (130,130,130):
                     self.circles[id_x][id_y].redraw_circle(self.circles[id_x][id_y].color)
                 self.cursor_position[1] = self.y_array[id_y - 1]
                 pg.draw.circle(self.screen, (130,130,130), (self.cursor_position[0], self.cursor_position[1]), 5)
-            print('Вверх')
+            self.auth_text_result.redraw_text('Вверх', '0xBEBEBE')
         elif movement_type == 3:
             if id_y + 1 < len(self.y_array):
                 if self.circles[id_x][id_y].color != (130,130,130):
                     self.circles[id_x][id_y].redraw_circle(self.circles[id_x][id_y].color)
                 self.cursor_position[1] = self.y_array[id_y + 1]
                 pg.draw.circle(self.screen, (130,130,130), (self.cursor_position[0], self.cursor_position[1]), 5)  
-            print('Вниз')
+            self.auth_text_result.redraw_text('Вниз', '0xBEBEBE')
         elif movement_type == 4:
             for circle_row in range(len(self.circles[0])):
                 for circle_column in range(len(self.circles[1])):
@@ -182,7 +182,7 @@ class Game:
                             self.sing_in_data.add_to_graphic_password(self.circles[circle_row][circle_column])
                             self.circles[circle_row][circle_column].redraw_circle((130,130,130))
                         pg.draw.circle(self.screen, (130,130,130), (self.cursor_position[0], self.cursor_position[1]), 5)
-            print('Щелчок')
+            self.auth_text_result.redraw_text('Щелчок', '0xBEBEBE')
         elif movement_type == 5:
             self.is_game_started = False
             login = self.text_edit.get_textstring()
@@ -198,7 +198,6 @@ class Game:
                     self.auth_text_result.redraw_text('Authentication error. Enter correct login or password.', '0xe25050')
             else:
                 self.auth_text_result.redraw_text('Authentication error. Enter correct login or password.', '0xe25050')
-            print('Схатить')
             self.sing_in_data = SingInData()
             self.circles.clear()
             self.draw_level((5,5))
@@ -206,12 +205,12 @@ class Game:
 
     def get_new_prepared_signal(self):
         try:
-            self.auth_text_result.redraw_text('', '0xe25050')
             driver = EmgDriver()
             data = driver.get_data(self.indicator)
+            self.auth_text_result.redraw_text('', '0xe25050')
             filter = Filter(data, 8)
             filtered_data = filter.filtfilt()
-            cutter = Cutter(filtered_data, 2000, 15000, 350000)
+            cutter = Cutter(filtered_data, 2000, 15000, 500000)
             cut_filtered_data = cutter.cut_signal()
         except TimeoutError:
             self.is_game_started = False
